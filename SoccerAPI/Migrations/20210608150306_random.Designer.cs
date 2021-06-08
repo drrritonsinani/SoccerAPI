@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SoccerAPI.Data;
 
 namespace SoccerAPI.Migrations
 {
     [DbContext(typeof(SoccerDbContext))]
-    partial class SoccerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210608150306_random")]
+    partial class random
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -252,6 +254,34 @@ namespace SoccerAPI.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SoccerAPI.Models.Manager", b =>
+                {
+                    b.Property<int>("ManagerId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("TeamId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ManagerId");
+
+                    b.HasIndex("TeamId")
+                        .IsUnique();
+
+                    b.ToTable("Managers");
+                });
+
             modelBuilder.Entity("SoccerAPI.Models.Player", b =>
                 {
                     b.Property<int>("Id")
@@ -439,6 +469,17 @@ namespace SoccerAPI.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("SoccerAPI.Models.Manager", b =>
+                {
+                    b.HasOne("SoccerAPI.Models.Team", "Team")
+                        .WithOne("Manager")
+                        .HasForeignKey("SoccerAPI.Models.Manager", "TeamId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Team");
+                });
+
             modelBuilder.Entity("SoccerAPI.Models.Player", b =>
                 {
                     b.HasOne("SoccerAPI.Models.Team", "Team")
@@ -488,6 +529,8 @@ namespace SoccerAPI.Migrations
 
             modelBuilder.Entity("SoccerAPI.Models.Team", b =>
                 {
+                    b.Navigation("Manager");
+
                     b.Navigation("Players");
                 });
 #pragma warning restore 612, 618

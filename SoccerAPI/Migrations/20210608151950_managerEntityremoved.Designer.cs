@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SoccerAPI.Data;
 
 namespace SoccerAPI.Migrations
 {
     [DbContext(typeof(SoccerDbContext))]
-    partial class SoccerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210608151950_managerEntityremoved")]
+    partial class managerEntityremoved
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -21,7 +21,7 @@ namespace SoccerAPI.Mapping
             CreateMap<Player, PlayerResource>()
                 .ForMember(pr=>pr.Positions,opt=>opt.MapFrom(p=>p.Positions.Select(ps=>ps.PositionId)));
             CreateMap<Player, PlayerResource2>();
-            CreateMap<Manager, ManagerResource>();
+           
 
             // API Resource to Domain
            
@@ -45,7 +45,7 @@ namespace SoccerAPI.Mapping
                       player.Positions.Add(position);
               });
             CreateMap<PlayerResource2, Player>();
-            CreateMap<ManagerResource, Manager>();
+           
         }
     }
 }

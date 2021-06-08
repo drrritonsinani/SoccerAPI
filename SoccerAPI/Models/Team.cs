@@ -18,8 +18,6 @@ namespace SoccerAPI.Models
         public int? LeagueId { get; set; }
         public League League { get; set; }
 
-        public Manager Manager { get; set; }
-
         public ICollection<Player> Players { get; set; }
 
     }

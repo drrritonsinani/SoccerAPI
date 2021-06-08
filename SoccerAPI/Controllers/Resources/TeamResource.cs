@@ -15,7 +15,6 @@ namespace SoccerAPI.Controllers.Resources
         public string Stadium { get; set; }
         public string Location { get; set; }
 
-        public ManagerResource Manager { get; set; }
         public ICollection<PlayerResource2> Players { get; set; }
 
         public TeamResource()
