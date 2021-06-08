@@ -13,34 +13,22 @@ namespace SoccerAPI.Mapping
         public MappingProfile()
         {
             // Domain to API Resource
-            CreateMap<League, LeagueResource>()
-                .ForMember(lr => lr.Teams, opt => opt.MapFrom(l => l.Teams.Select(t => t.Name)));
+            CreateMap<League, LeagueResource>();
+               
 
             CreateMap<Team, TeamResource>();
+            CreateMap<Team, TeamResource2>();
             CreateMap<Player, PlayerResource>()
                 .ForMember(pr=>pr.Positions,opt=>opt.MapFrom(p=>p.Positions.Select(ps=>ps.PositionId)));
+            CreateMap<Player, PlayerResource2>();
             CreateMap<Manager, ManagerResource>();
 
             // API Resource to Domain
-            CreateMap<LeagueResourceId,League>()
-                .ForMember(league => league.LeagueId, opt => opt.Ignore())
-              .ForMember(league => league.Teams, opt => opt.Ignore())
-                .AfterMap((leagueResourceId, league) =>
-                {
-                    // Remove unselected positions
-                    var removedTeams = league.Teams.Where(id => !leagueResourceId.Teams.Contains(league.LeagueId));
-                    foreach (var team in removedTeams)
-                        league.Teams.Remove(team);
-
-                    // Add new positions
-                    var addedTeams = leagueResource.Teams.Where(name => !league.Teams.Any(teams => teams.Name == name)).Select(name => new League { Name = name });
-                    foreach (var team in addedTeams)
-                        league.Teams.Add(team);
-                });
+           
             CreateMap<LeagueResource, League>();                                 
-                
-              
+               
             CreateMap<TeamResource, Team>();
+            CreateMap<TeamResource2,Team>();
             CreateMap<PlayerResource, Player>()
               .ForMember(player => player.Id, opt => opt.Ignore())
               .ForMember(player => player.Positions, opt => opt.Ignore())
@@ -56,6 +44,7 @@ namespace SoccerAPI.Mapping
                   foreach (var position in addedPositions)
                       player.Positions.Add(position);
               });
+            CreateMap<PlayerResource2, Player>();
             CreateMap<ManagerResource, Manager>();
         }
     }

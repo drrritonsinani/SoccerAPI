@@ -5,11 +5,10 @@ using System.Threading.Tasks;
 
 namespace SoccerAPI.Controllers.Resources
 {
-    public class ManagerResource
+    public class PlayerResource2
     {
-        public int ManagerId { get; set; }
+        public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
-        public TeamResource2 Team { get; set; }
     }
 }

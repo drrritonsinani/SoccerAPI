@@ -15,7 +15,7 @@ namespace SoccerAPI.Models
         public string Stadium { get; set; }
         public string Location { get; set; }
 
-        public int LeagueId { get; set; }
+        public int? LeagueId { get; set; }
         public League League { get; set; }
 
         public Manager Manager { get; set; }

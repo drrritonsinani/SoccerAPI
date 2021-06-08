@@ -50,32 +50,20 @@ namespace SoccerAPI.Controllers
         // PUT: api/Leagues/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutLeague(int id, League league)
+        public async Task<IActionResult> PutLeague(int id, LeagueResource leagueResource)
         {
-            if (id != league.LeagueId)
-            {
-                return BadRequest();
-            }
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var league = await _context.Leagues.SingleOrDefaultAsync(l => l.LeagueId == id);
+            if (league == null)
+                return NotFound();
 
-            _context.Entry(league).State = EntityState.Modified;
+            _mapper.Map<LeagueResource, League>(leagueResource, league);
+           
+            await _context.SaveChangesAsync();
+            var result = _mapper.Map<League, LeagueResource>(league);
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!LeagueExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return Ok(result);
         }
 
         // POST: api/Leagues
@@ -92,22 +80,28 @@ namespace SoccerAPI.Controllers
             _context.Leagues.Add(league);
             await _context.SaveChangesAsync();
 
-            var result = _mapper.Map<League, LeagueResource>(league);
+           
 
-            return Ok(result);
+            return Ok("League created!");
         }
 
         // DELETE: api/Leagues/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLeague(int id)
         {
-            var league = await _context.Leagues.FindAsync(id);
+            var league = await _context.Leagues.Include(l=>l.Teams).SingleOrDefaultAsync(l => l.LeagueId == id);
             if (league == null)
             {
                 return NotFound();
             }
 
+           
+
             _context.Leagues.Remove(league);
+            foreach(var team in league.Teams)
+            {
+                team.League = null;
+            }
             await _context.SaveChangesAsync();
 
             return NoContent();

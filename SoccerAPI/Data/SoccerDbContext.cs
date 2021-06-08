@@ -26,12 +26,15 @@ namespace SoccerAPI.Data
 
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<League>().HasData(
+            modelBuilder.Entity<League>()
+                
+                .HasData(
                 new League { LeagueId = 1, Name = "Premier League" },
                 new League { LeagueId = 2, Name = "Seria A" },
                 new League { LeagueId = 3, Name = "La Liga" }
 
             );
+
 
             modelBuilder.Entity<Team>().HasData(
                new Team { TeamId = 1, Name = "Team 1", LeagueId = 1 },
@@ -56,3 +59,6 @@ namespace SoccerAPI.Data
 
    
 }
+
+
+
