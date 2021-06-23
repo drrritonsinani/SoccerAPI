@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SoccerAPI.Controllers.Resources;
 using SoccerAPI.Data;
+using SoccerAPI.IRepository;
 using SoccerAPI.Models;
 
 namespace SoccerAPI.Controllers
@@ -16,12 +17,14 @@ namespace SoccerAPI.Controllers
     [ApiController]
     public class LeaguesController : ControllerBase
     {
-        private readonly SoccerDbContext _context;
+        
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public LeaguesController(SoccerDbContext context, IMapper mapper)
+        public LeaguesController(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _context = context;
+
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -29,8 +32,8 @@ namespace SoccerAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<LeagueResource>>> GetLeagues()
         {
-            var league = await _context.Leagues.Include(l => l.Teams).ToListAsync();
-            var leagueResource = _mapper.Map<List<League>, List<LeagueResource>>(league);
+            var league = await _unitOfWork.Leagues.GetAll();
+            var leagueResource = _mapper.Map<List<League>, List<LeagueResource>>((List<League>)league);
             return leagueResource;
         }
 
@@ -38,7 +41,7 @@ namespace SoccerAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<LeagueResource>> GetLeague(int id)
         {
-            var league = await _context.Leagues.Include(l => l.Teams).SingleOrDefaultAsync(l => l.LeagueId == id);
+            var league = await _unitOfWork.Leagues.GetT(l=>l.LeagueId==id);
             if (league == null)
                 return NotFound();
 
@@ -54,13 +57,15 @@ namespace SoccerAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var league = await _context.Leagues.SingleOrDefaultAsync(l => l.LeagueId == id);
+            //var league = await _context.Leagues.SingleOrDefaultAsync(l => l.LeagueId == id);
+            var league = await _unitOfWork.Leagues.GetT(l => l.LeagueId == id);
             if (league == null)
                 return NotFound();
 
             _mapper.Map<LeagueResource, League>(leagueResource, league);
-           
-            await _context.SaveChangesAsync();
+
+            //await _context.SaveChangesAsync();
+            _unitOfWork.Leagues.Update(league);
             var result = _mapper.Map<League, LeagueResource>(league);
 
             return Ok(result);
@@ -75,41 +80,37 @@ namespace SoccerAPI.Controllers
                 return BadRequest(ModelState);
 
             var league = _mapper.Map<LeagueResource, League>(leagueResource);
-           
-           
-            _context.Leagues.Add(league);
-            await _context.SaveChangesAsync();
 
+            await _unitOfWork.Leagues.Insert(league);
+            //_context.Leagues.Add(league);
+            //await _context.SaveChangesAsync();
+            var result = _mapper.Map<League, LeagueResource>(league);
            
 
-            return Ok("League created!");
+            return Ok(result);
         }
 
         // DELETE: api/Leagues/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLeague(int id)
         {
-            var league = await _context.Leagues.Include(l=>l.Teams).SingleOrDefaultAsync(l => l.LeagueId == id);
-            if (league == null)
-            {
-                return NotFound();
-            }
+            //var league = await _context.Leagues.Include(l=>l.Teams).SingleOrDefaultAsync(l => l.LeagueId == id);
+            //if (league == null)
+            //{
+               // return NotFound();
+            //}
 
            
+            var league=_unitOfWork.Leagues.Delete(id);
+            //foreach(var team in league.Teams)
+            //{
+                //team.League = null;
+            //}
+            await _unitOfWork.Save();
 
-            _context.Leagues.Remove(league);
-            foreach(var team in league.Teams)
-            {
-                team.League = null;
-            }
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(id);
         }
 
-        private bool LeagueExists(int id)
-        {
-            return _context.Leagues.Any(e => e.LeagueId == id);
-        }
+        
     }
 }

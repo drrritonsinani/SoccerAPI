@@ -9,6 +9,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using SoccerAPI.Data;
+using SoccerAPI.IRepository;
+using SoccerAPI.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,6 +38,7 @@ namespace SoccerAPI
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SoccerAPI", Version = "v1" });
             });
             services.AddAutoMapper(typeof(Startup));
+            services.AddTransient<IUnitOfWork, UnitOfWork>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
