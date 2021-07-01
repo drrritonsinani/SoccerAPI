@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SoccerAPI.Controllers.Resources;
 using SoccerAPI.Data;
+using SoccerAPI.IRepository;
 using SoccerAPI.Models;
 
 namespace SoccerAPI.Controllers
@@ -16,12 +17,12 @@ namespace SoccerAPI.Controllers
     [ApiController]
     public class TeamsController : ControllerBase
     {
-        private readonly SoccerDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public TeamsController(SoccerDbContext context, IMapper mapper)
+        public TeamsController(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -29,8 +30,8 @@ namespace SoccerAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TeamResource>>> GetTeams()
         {
-            var team = await _context.Teams.Include(t => t.Players).ToListAsync();
-            var teamResource = _mapper.Map<List<Team>, List<TeamResource>>(team);
+            var team = await _unitOfWork.Teams.GetAll();
+            var teamResource = _mapper.Map<List<Team>, List<TeamResource>>((List<Team>)team);
             return teamResource;
         }
 
@@ -38,13 +39,14 @@ namespace SoccerAPI.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<TeamResource>> GetTeam(int id)
         {
-            var team = await _context.Teams.Include(t => t.Players).SingleOrDefaultAsync(l => l.TeamId == id);
+            var team = await _unitOfWork.Teams.GetT(t => t.TeamId == id);
             if (team == null)
+            {
                 return NotFound();
+            }
+            var result = _mapper.Map<Team, TeamResource>(team);
 
-            var teamResource = _mapper.Map<Team, TeamResource>(team);
-
-            return Ok(teamResource);
+            return Ok(result);
         }
 
         // PUT: api/Teams/5
@@ -54,15 +56,15 @@ namespace SoccerAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            var team = await _context.Teams.SingleOrDefaultAsync(t => t.TeamId == id);
+            var team = await _unitOfWork.Teams.GetT(t => t.TeamId == id);
             if (team == null)
                 return NotFound();
 
             _mapper.Map<TeamResource, Team>(teamResource, team);
+            _unitOfWork.Teams.Update(team);
 
-            await _context.SaveChangesAsync();
+            await _unitOfWork.Save();
             var result = _mapper.Map<Team, TeamResource>(team);
-
             return Ok(result);
         }
 
@@ -76,40 +78,29 @@ namespace SoccerAPI.Controllers
 
             var team = _mapper.Map<TeamResource, Team>(teamResource);
 
+            await _unitOfWork.Teams.Insert(team);
+            await _unitOfWork.Save();
+            var result = _mapper.Map<Team, TeamResource>(team);
 
-            _context.Teams.Add(team);
-            await _context.SaveChangesAsync();
-
-
-
-            return Ok("Team has been created!");
+            return Ok(result);
         }
 
         // DELETE: api/Teams/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTeam(int id)
         {
-            var team = await _context.Teams.Include(t => t.Players).SingleOrDefaultAsync(t => t.TeamId == id);
+            var team = await _unitOfWork.Teams.GetT(t => t.TeamId == id);
             if (team == null)
             {
-                return NotFound();
+                return NotFound("A team with this id was not found!");
             }
 
+            await _unitOfWork.Teams.Delete(id);
+            await _unitOfWork.Save();
 
-
-            _context.Teams.Remove(team);
-            foreach (var player in team.Players)
-            {
-                player.Team = null;
-            }
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(id);
         }
 
-        private bool TeamExists(int id)
-        {
-            return _context.Teams.Any(e => e.TeamId == id);
-        }
+        
     }
 }

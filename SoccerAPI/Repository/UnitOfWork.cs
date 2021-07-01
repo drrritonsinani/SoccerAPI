@@ -11,10 +11,10 @@ namespace SoccerAPI.Repository
     public class UnitOfWork : IUnitOfWork
     {
         private readonly SoccerDbContext context;
-        public IGenericRepository<League> leagues { get; set; }
-        public IGenericRepository<Team> teams { get; set; }
-        public IGenericRepository<Player> players { get; set; }
-        public IGenericRepository<Position> positions { get; set; }
+        public IGenericRepository<League> leagues;
+        public IGenericRepository<Team> teams;
+        public IGenericRepository<Player> players;
+        public IGenericRepository<Position> positions;
 
         public UnitOfWork(SoccerDbContext context)
         {

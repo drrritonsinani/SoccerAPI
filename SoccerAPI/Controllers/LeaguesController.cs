@@ -23,7 +23,6 @@ namespace SoccerAPI.Controllers
 
         public LeaguesController(IUnitOfWork unitOfWork, IMapper mapper)
         {
-
             _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
@@ -42,12 +41,12 @@ namespace SoccerAPI.Controllers
         public async Task<ActionResult<LeagueResource>> GetLeague(int id)
         {
             var league = await _unitOfWork.Leagues.GetT(l=>l.LeagueId==id);
-            if (league == null)
+            if (league == null){
                 return NotFound();
+            }
+            var result = _mapper.Map<League,LeagueResource>(league);
 
-            var leagueResource = _mapper.Map<League,LeagueResource>(league);
-
-            return Ok(leagueResource);
+            return Ok(result);
         }
 
         // PUT: api/Leagues/5
@@ -57,17 +56,15 @@ namespace SoccerAPI.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            //var league = await _context.Leagues.SingleOrDefaultAsync(l => l.LeagueId == id);
             var league = await _unitOfWork.Leagues.GetT(l => l.LeagueId == id);
             if (league == null)
                 return NotFound();
 
             _mapper.Map<LeagueResource, League>(leagueResource, league);
-
-            //await _context.SaveChangesAsync();
             _unitOfWork.Leagues.Update(league);
+           
+           await _unitOfWork.Save();
             var result = _mapper.Map<League, LeagueResource>(league);
-
             return Ok(result);
         }
 
@@ -82,11 +79,9 @@ namespace SoccerAPI.Controllers
             var league = _mapper.Map<LeagueResource, League>(leagueResource);
 
             await _unitOfWork.Leagues.Insert(league);
-            //_context.Leagues.Add(league);
-            //await _context.SaveChangesAsync();
+            await _unitOfWork.Save();
             var result = _mapper.Map<League, LeagueResource>(league);
            
-
             return Ok(result);
         }
 
@@ -94,18 +89,13 @@ namespace SoccerAPI.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteLeague(int id)
         {
-            //var league = await _context.Leagues.Include(l=>l.Teams).SingleOrDefaultAsync(l => l.LeagueId == id);
-            //if (league == null)
-            //{
-               // return NotFound();
-            //}
+            var league = await _unitOfWork.Leagues.GetT(l => l.LeagueId == id);
+            if (league == null)
+            {
+                return NotFound("A league with this id was not found!");
+            }
 
-           
-            var league=_unitOfWork.Leagues.Delete(id);
-            //foreach(var team in league.Teams)
-            //{
-                //team.League = null;
-            //}
+            await _unitOfWork.Leagues.Delete(id);
             await _unitOfWork.Save();
 
             return Ok(id);
