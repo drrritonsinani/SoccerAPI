@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using SoccerAPI.Configuration;
 using SoccerAPI.Models;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SoccerAPI.Data
 {
-    public class SoccerDbContext:IdentityDbContext
+    public class SoccerDbContext:IdentityDbContext<ApiUser>
     {
         public SoccerDbContext(DbContextOptions<SoccerDbContext> options) : base(options)
         {
@@ -24,7 +25,7 @@ namespace SoccerAPI.Data
         {
 
             base.OnModelCreating(modelBuilder);
-
+            modelBuilder.ApplyConfiguration(new RoleConfiguration());
             modelBuilder.Entity<League>()
                 
                 .HasData(

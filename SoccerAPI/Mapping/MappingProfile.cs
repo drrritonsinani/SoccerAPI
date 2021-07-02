@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using SoccerAPI.Controllers.Resources;
+using SoccerAPI.Data;
 using SoccerAPI.Models;
 using System;
 using System.Collections.Generic;
@@ -21,10 +22,10 @@ namespace SoccerAPI.Mapping
             CreateMap<Player, PlayerResource>()
                 .ForMember(pr=>pr.Positions,opt=>opt.MapFrom(p=>p.Positions.Select(ps=>ps.PositionId)));
             CreateMap<Player, PlayerResource2>();
-           
+            CreateMap<ApiUser, User>().ReverseMap();
 
             // API Resource to Domain
-           
+
             CreateMap<LeagueResource, League>();                                 
                
             CreateMap<TeamResource, Team>();
